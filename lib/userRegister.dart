@@ -1,12 +1,32 @@
 import 'dart:developer';
 import 'dart:io';
+import 'package:dms/usermodel.dart';
+
 import 'design.dart';
 import 'package:dms/userLogin.dart';
 import 'package:flutter_otp/flutter_otp.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 
-FlutterOtp otp = FlutterOtp();
+//FlutterOtp otp = FlutterOtp();
+Future<UserModel>  createUser(String phone)async{
+  final String apiUrl = "http://127.0.0.1:8000/verify-user";
+
+  final response = await http.post(apiUrl,body: {
+    "phone": phone
+  }
+  );
+
+  if(response.statusCode == 200)
+    {
+      final String responseString = response.body;
+      return userModelFromJson(responseString);
+    }
+  else{
+    return null;
+  }
+}
 
 class UserRegister extends StatefulWidget {
   @override
@@ -17,30 +37,33 @@ class _UserRegisterState extends State<UserRegister> {
   final _userRegisterKey = GlobalKey<FormState>();
   final TextEditingController _pass = TextEditingController();
   final TextEditingController _phno = TextEditingController();
-  final TextEditingController _otpValue = TextEditingController();
+  //final TextEditingController _otpValue = TextEditingController();
+  final TextEditingController _email = TextEditingController();
+  UserModel _user;
 
   @override
 
-  _onAlertWithCustomImagePressed1(context) {
-    Alert(
-      context: context,
-      title: "REGISTRATION SUCCESS",
-      image: Image.asset('images/greentick.png'),
-      buttons: [
-        DialogButton(
-          color: Colors.black,
-          onPressed: (){
-            Navigator.pop(context);
-          },
-          child: Text(
-            "close",
-            style: TextStyle(color: Colors.white, fontSize: 20),
-          ),
-
-        )
-      ]
-    ).show();
-  }
+//  _onAlertWithCustomImagePressed1(context) {
+//    Alert(
+//      context: context,
+//      title: "REGISTRATION SUCCESS",
+//      desc: '${_user.token}',
+//      //image: Image.asset('images/greentick.png'),
+//      buttons: [
+//        DialogButton(
+//          color: Colors.black,
+//          onPressed: (){
+//            Navigator.pop(context);
+//          },
+//          child: Text(
+//            "close",
+//            style: TextStyle(color: Colors.white, fontSize: 20),
+//          ),
+//
+//        )
+//      ]
+//    ).show();
+//  }
   _onAlertWithCustomImagePressed2(context) {
     Alert(
         context: context,
@@ -62,6 +85,7 @@ class _UserRegisterState extends State<UserRegister> {
         ]
     ).show();
   }
+
   _onAlertWithCustomContentPressed(context) {
     Alert(
         context: context,
@@ -70,41 +94,51 @@ class _UserRegisterState extends State<UserRegister> {
           children: <Widget>[
             TextField(
               decoration: InputDecoration(
-                labelText: 'enter OTP',
+                labelText: 'id is ${_user.detail}',
               ),
-              controller: _otpValue,
+              //controller: _otpValue,
             ),
           ],
         ),
         buttons: [
-          DialogButton(
-            color: Colors.black,
-            onPressed: (){
-              if(otp.resultChecker(int.parse(_otpValue.text))){
-                Navigator.pop(context);
-                _onAlertWithCustomImagePressed1(context);
-              }
-              else{
-                Navigator.pop(context);
-                _onAlertWithCustomImagePressed2(context);
-              }
-
-            },
-            child: Text(
-              "verify",
-              style: TextStyle(color: Colors.white, fontSize: 20),
-            ),
-
-          )
+//          DialogButton(
+//            color: Colors.black,
+//            onPressed: (){
+//              if(otp.resultChecker(int.parse(_otpValue.text))){
+//                Navigator.pop(context);
+//                _onAlertWithCustomImagePressed1(context);
+//              }
+//              else{
+//                Navigator.pop(context);
+//                _onAlertWithCustomImagePressed2(context);
+//              }
+//
+//            },
+//            child: Text(
+//              "verify",
+//              style: TextStyle(color: Colors.white, fontSize: 20),
+//            ),
+//
+//          )
         ]).show();
   }
   FlatButton setUserRegisterButton(String action){
     return FlatButton(
-      onPressed: () {
+      onPressed: () async {
         if(action=='sign up'){
           if (_userRegisterKey.currentState.validate()) {
-            otp.sendOtp(_phno.text);
-            _onAlertWithCustomContentPressed(context);
+//            otp.sendOtp(_phno.text);
+          final String email = _email.text;
+          final String password = _pass.text;
+          final String phone = _phno.text;
+
+          final UserModel user = await createUser(phone);
+          setState(() {
+            _user = user;
+          });
+          _onAlertWithCustomContentPressed(context);
+
+
           }
         }
         else{
@@ -145,6 +179,10 @@ class _UserRegisterState extends State<UserRegister> {
     } else {
       hide = false;
     }
+    if(fieldName=='phone')
+      {
+        control = _phno;
+      }
     return TextFormField(
       decoration: InputDecoration(
         labelText: labelTxt,

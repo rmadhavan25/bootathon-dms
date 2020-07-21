@@ -58,7 +58,7 @@ class Design{
   {
     return BottomNavigationBar(
       backgroundColor: Colors.red.shade200,
-      currentIndex: 0, // this will be set when a new tab is tapped
+      currentIndex: 1, // this will be set when a new tab is tapped
       items: [
         BottomNavigationBarItem(
           icon: new Icon(Icons.home),
