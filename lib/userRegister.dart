@@ -11,13 +11,14 @@ import 'package:flutter/material.dart';
 
 //FlutterOtp otp = FlutterOtp();
 Future<UserModel>  createUser(String phone)async{
-  final String apiUrl = "http://127.0.0.1:8000/verify-user";
+  final String apiUrl = "http://10.0.2.2:8000/verify-user";
 
   final response = await http.post(apiUrl,body: {
     "phone": phone
   }
   );
-
+  print(response.body);
+  print(response.statusCode);
   if(response.statusCode == 200)
     {
       final String responseString = response.body;
@@ -94,32 +95,25 @@ class _UserRegisterState extends State<UserRegister> {
           children: <Widget>[
             TextField(
               decoration: InputDecoration(
-                labelText: 'id is ${_user.detail}',
+                labelText: '${_user.detail}',
               ),
               //controller: _otpValue,
             ),
           ],
         ),
         buttons: [
-//          DialogButton(
-//            color: Colors.black,
-//            onPressed: (){
-//              if(otp.resultChecker(int.parse(_otpValue.text))){
-//                Navigator.pop(context);
-//                _onAlertWithCustomImagePressed1(context);
-//              }
-//              else{
-//                Navigator.pop(context);
-//                _onAlertWithCustomImagePressed2(context);
-//              }
-//
-//            },
-//            child: Text(
-//              "verify",
-//              style: TextStyle(color: Colors.white, fontSize: 20),
-//            ),
-//
-//          )
+          DialogButton(
+            color: Colors.black,
+            onPressed: (){
+                Navigator.pop(context);
+                //_onAlertWithCustomImagePressed1(context);
+              },
+            child: Text(
+              "verify",
+              style: TextStyle(color: Colors.white, fontSize: 20),
+            ),
+
+          )
         ]).show();
   }
   FlatButton setUserRegisterButton(String action){
