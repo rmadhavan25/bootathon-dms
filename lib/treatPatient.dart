@@ -1,40 +1,45 @@
-import 'dart:developer';
-import 'dart:io';
-import 'package:dms/latestprescription.dart';
-import 'Viewpatienthistory.dart';
-import 'design.dart';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'design.dart';
+import 'Viewhistorydoctor.dart';
+import 'prescription.dart';
 
-class UserHomePage extends StatefulWidget {
+
+Design dh = new Design();
+
+// ignore: camel_case_types
+class TreatPatient extends StatefulWidget {
   @override
-  _UserHomePageState createState() => _UserHomePageState(phone,token);
+  _TreatPatientState createState() => _TreatPatientState(phone,token);
   String phone,token;
+  TreatPatient(this.phone,this.token);
 
-  UserHomePage(this.phone,this.token);
 }
 
-class _UserHomePageState extends State<UserHomePage> {
+
+
+class _TreatPatientState extends State<TreatPatient> {
   String phone,token;
+  _TreatPatientState(this.phone,this.token);
 
-  _UserHomePageState(this.phone,this.token);
-  @override
 
-  Design uh = new Design();
   FlatButton setFunctionButton(String watsIn,double ht, double wd,double fontSize) {
     return FlatButton(
       onPressed: () {
-        if(watsIn=='Latest Prescription'){
+        if(watsIn=='Write Prescription'){
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => ViewPatientlatest(token,phone)),
+            MaterialPageRoute(builder: (context) => Prescription(phone,token)),
           );
         }
         else{
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => ViewPatient(token,phone)),
+            MaterialPageRoute(builder: (context) => View(token,phone)),
           );
         }
+
       },
       child: Container(
         child: Center(
@@ -64,9 +69,8 @@ class _UserHomePageState extends State<UserHomePage> {
 
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: dh.topBar('Treat Patient'),
       backgroundColor: Colors.white,
-      appBar: uh.topBar('Home'),
-      bottomNavigationBar: uh.bottomNav(),
       body: SafeArea(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -74,30 +78,16 @@ class _UserHomePageState extends State<UserHomePage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
-                setFunctionButton('My Medical History',150,320,20),
-                //setFunctionButton('My Medicines',130,130,18),
+                setFunctionButton('Write Prescription',150,320,20),
               ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
-                setFunctionButton('Latest Prescription',300,150,20),
-
-                Container(
-                  child: Text(
-                    'Hope you are doing well !',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  height: 190,
-                  width: 130,
-                  padding: EdgeInsets.fromLTRB(25, 20, 25, 10),
-                ),
+                setFunctionButton('Get History',150,320,20),
+                
               ],
-            ),//button and welcome text
+            ),
           ],
         ),
       ),

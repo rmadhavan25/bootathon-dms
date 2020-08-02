@@ -1,20 +1,42 @@
 import 'dart:developer';
 import 'dart:io';
+import 'package:dms/myAttendingHistory.dart';
+import 'package:dms/requestAccess.dart';
 import 'design.dart';
+import 'treatPatient.dart';
 import 'package:flutter/material.dart';
 
 class DoctorHomePage extends StatefulWidget {
   @override
-  _DoctorHomePageState createState() => _DoctorHomePageState();
+  _DoctorHomePageState createState() => _DoctorHomePageState(token);
+  String token;
+  DoctorHomePage(this.token);
 }
 
 class _DoctorHomePageState extends State<DoctorHomePage> {
+
+  String token;
+  _DoctorHomePageState(this.token);
   @override
 
   Design dh = new Design();
   FlatButton setFunctionButton(String watsIn,double ht, double wd,double fontSize) {
     return FlatButton(
-      onPressed: () {},
+      onPressed: () {
+        if(watsIn=='Treat Patient'){
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => RequestAccess(token)),
+          );
+        }
+        else{
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => MyAttendingHistory(token)),
+          );
+        }
+
+      },
       child: Container(
         child: Center(
           child: Text(

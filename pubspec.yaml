@@ -14,6 +14,12 @@ dependencies:
   flutter_otp: ^0.3.2
   rflutter_alert: ^1.0.3
   http: ^0.12.2
+  dropdownfield: ^1.0.3
+  syncfusion_flutter_pdf: ^18.2.45-beta
+  flutter_full_pdf_viewer: ^1.0.6
+  path_provider: ^1.6.11
+  url_launcher: ^5.5.0
+  flutter_plugin_pdf_viewer: any
   flutter:
     sdk: flutter
 

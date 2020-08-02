@@ -2,31 +2,233 @@ import 'dart:developer';
 import 'dart:io';
 import 'userLogin.dart';
 import 'design.dart';
+import 'usermodel.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:dropdownfield/dropdownfield.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 
 class DoctorRegister extends StatefulWidget {
   @override
   _DoctorRegisterState createState() => _DoctorRegisterState();
 }
+String Response;
+
+int flag = 0;
+Future<UserModel>  verifyUser(String phone,String email,String licence)async{
+  final String apiUrl = "http://10.0.2.2:8000/verify-user";
+
+  final response = await http.post(apiUrl,body: {
+    "phone": phone,
+    "email": email,
+    "licence_no" : licence,
+    "user_type": 'Doctor',
+  }
+  );
+//  print(response.body);
+//  print(response.statusCode);
+  if(response.statusCode == 200)
+  {
+    final String responseString = response.body;
+    return userModelFromJson(responseString);
+  }
+  if(response.statusCode==400)
+  {
+    flag = 1;
+    Response = response.body;
+    print(Response);
+    print(flag);
+
+  }
+}
+
+Future<UserModel> registerUser(String phone , String password , String otp, String name, String licence, String gender)async{
+  final String apiUrl = "http://10.0.2.2:8000/create-user";
+  final response = await http.post(apiUrl,body:{
+    'phone' : phone,
+    'password' : password,
+    'OTP' : otp,
+    'user_type' : 'Doctor',
+    'gender' : gender,
+    'name' : name,
+    'licence_no' : licence,
+  }
+  );
+  print(response.body);
+  print(response.statusCode);
+  if(response.statusCode == 200)
+  {
+    final String responseString = response.body;
+    return userModelFromJson(responseString);
+  }
+  else{
+    return null;
+  }
+}
 
 class _DoctorRegisterState extends State<DoctorRegister> {
   final _doctorRegisterKey = GlobalKey<FormState>();
   final TextEditingController _pass = TextEditingController();
+  final TextEditingController _phno = TextEditingController();
+  final TextEditingController _otpValue = TextEditingController();
+  final TextEditingController _email = TextEditingController();
+  final TextEditingController _name = TextEditingController();
+  final TextEditingController _licence_no = TextEditingController();
+  final TextEditingController _gender = TextEditingController();
+  UserModel _user;
+  String selectGender="";
+  List<String> gender =[
+    'Male',
+    'Female',
+  ];
+  int f = flag;
+
   @override
 
+
+
+ _onAlertWithCustomImagePressed1(context) {
+    Alert(
+        context: context,
+        title: 'REGISTERED SUCCESSFULLY',
+        image: Image.asset('images/greentick.png'),
+        buttons: [
+          DialogButton(
+            color: Colors.black,
+            onPressed: (){
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => LoginPage()),
+              );
+            },
+            child: Text(
+              "close",
+              style: TextStyle(color: Colors.white, fontSize: 20),
+            ),
+
+          )
+        ]
+    ).show();
+  }
+  _onAlertWithCustomImagePressed2(context) {
+    Alert(
+        context: context,
+        title: "REGISTRATION FAILED",
+        desc: 'invalid OTP',
+        image: Image.asset('images/redcross.png'),
+        buttons: [
+          DialogButton(
+            color: Colors.black,
+            onPressed: (){
+              Navigator.pop(context);
+            },
+            child: Text(
+              "close",
+              style: TextStyle(color: Colors.white, fontSize: 20),
+            ),
+
+          )
+        ]
+    ).show();
+  }
+  _onAlertWithCustomContentPressed(context) {
+    Alert(
+        context: context,
+        title: '${_user.detail}',
+        content: Column(
+          children: <Widget>[
+            TextField(
+              decoration: InputDecoration(
+                labelText: 'enter otp',
+              ),
+              controller: _otpValue,
+            ),
+          ],
+        ),
+        buttons: [
+          DialogButton(
+            color: Colors.black,
+            onPressed: ()async{
+              final String phone = _phno.text;
+              final String password = _pass.text;
+              final String otp = _otpValue.text;
+              final String name = _name.text;
+              final String licence = _licence_no.text;
+              final String gender = _gender.text;
+
+              final UserModel user = await registerUser(phone,password,otp,name,licence,gender);
+              setState(() {
+                _user = user;
+              });
+              Navigator.pop(context);
+              if(_user!=null){
+                _onAlertWithCustomImagePressed1(context);
+              }
+              else{
+                _onAlertWithCustomImagePressed2(context);
+              }
+            },
+            child: Text(
+              "verify",
+              style: TextStyle(color: Colors.white, fontSize: 20),
+            ),
+
+          )
+        ]).show();
+  }
+  _onAlertWithCustomContentPressed1(context) {
+    Alert(
+        context: context,
+        title: 'Invalid Login Credential',
+        desc: Response,
+        buttons: [
+          DialogButton(
+            color: Colors.black,
+            onPressed: (){
+              Navigator.pop(context);
+            },
+            child: Text(
+              "close",
+              style: TextStyle(color: Colors.white, fontSize: 20),
+            ),
+
+          )
+        ]).show();
+  }
+
   Design dr = new Design();
+
   FlatButton setDoctorRegisterButton(String action)
   {
     return FlatButton(
-      onPressed: () {
+      onPressed: ()async {
         if(action=='Sign up')
         {
           if (_doctorRegisterKey.currentState.validate()) {
-            final snackBar = SnackBar(
-              content: Text('Registered Successfully'),
-              duration: Duration(seconds: 5),
-            );
-            Scaffold.of(context).showSnackBar(snackBar);
+            final String phone = _phno.text;
+            final String email = _email.text;
+            final String licence = _licence_no.text;
+
+            final UserModel user = await verifyUser(phone,email,licence);
+            setState(() {
+              _user = user;
+              f = flag;
+            });
+            if(f==1){
+              setState(() {
+                f = 0;
+              });
+              print("something wrong");
+              _onAlertWithCustomContentPressed1(context);
+            }
+            else{
+              if(_user!=null){
+                _onAlertWithCustomContentPressed(context);
+              }
+            }
+
+
           }
         }
         else{
@@ -67,6 +269,18 @@ class _DoctorRegisterState extends State<DoctorRegister> {
     } else {
       suffixText = null;
       hide = false;
+    }
+    if(fieldName=='phone')
+    {
+      control = _phno;
+    }
+    if(fieldName == 'name')
+    {
+      control = _name;
+    }
+    if(fieldName=='doctorID')
+    {
+      control = _licence_no;
     }
     return TextFormField(
       decoration: InputDecoration(
@@ -117,7 +331,7 @@ class _DoctorRegisterState extends State<DoctorRegister> {
               child: Form(
                 key: _doctorRegisterKey,
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
                     createTextFormField(20, 'Enter your name', r'[A-Z]', 'name'),
                     createTextFormField(20, 'Phone.no', r'^\d{10}$', 'phone'),
@@ -125,6 +339,18 @@ class _DoctorRegisterState extends State<DoctorRegister> {
                     createTextFormField(20, 'Doctor License ID', r'^[0-9]+$', 'doctorID'),
                     createTextFormField(20, 'password', r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$', 'password'),
                     createTextFormField(20, 'Re-type password', r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$', 'repassword'),
+                    DropDownField(
+                      controller: _gender,
+                      labelText: 'Gender',
+                      enabled: true,
+                      hintText: 'choose a Gender',
+                      items: gender,
+                      onValueChanged: (value){
+                        setState(() {
+                          selectGender = value;
+                        });
+                      },
+                    ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: <Widget>[
@@ -141,7 +367,8 @@ class _DoctorRegisterState extends State<DoctorRegister> {
                         ),
                         setDoctorRegisterButton('Go to login page'),
                       ],
-                    ) //buttons
+                    ), //buttons
+
                   ],
                 ),
               ),
