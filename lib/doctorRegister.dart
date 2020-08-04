@@ -29,9 +29,11 @@ Future<UserModel>  verifyUser(String phone,String email,String licence)async{
 //  print(response.statusCode);
   if(response.statusCode == 200)
   {
+    flag = 0;
     final String responseString = response.body;
     return userModelFromJson(responseString);
   }
+  print(response.statusCode);
   if(response.statusCode==400)
   {
     flag = 1;
@@ -42,7 +44,7 @@ Future<UserModel>  verifyUser(String phone,String email,String licence)async{
   }
 }
 
-Future<UserModel> registerUser(String phone , String password , String otp, String name, String licence, String gender)async{
+Future<UserModel> registerUser(String phone , String password , String otp, String name, String licence, String gender,String email)async{
   final String apiUrl = "http://10.0.2.2:8000/create-user";
   final response = await http.post(apiUrl,body:{
     'phone' : phone,
@@ -52,6 +54,7 @@ Future<UserModel> registerUser(String phone , String password , String otp, Stri
     'gender' : gender,
     'name' : name,
     'licence_no' : licence,
+    'email' : email,
   }
   );
   print(response.body);
@@ -96,7 +99,8 @@ class _DoctorRegisterState extends State<DoctorRegister> {
           DialogButton(
             color: Colors.black,
             onPressed: (){
-              Navigator.push(
+              Navigator.of(context).popUntil((route) => route.isFirst);
+              Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
                     builder: (context) => LoginPage()),
@@ -156,8 +160,9 @@ class _DoctorRegisterState extends State<DoctorRegister> {
               final String name = _name.text;
               final String licence = _licence_no.text;
               final String gender = _gender.text;
+              final String email = _email.text;
 
-              final UserModel user = await registerUser(phone,password,otp,name,licence,gender);
+              final UserModel user = await registerUser(phone,password,otp,name,licence,gender,email);
               setState(() {
                 _user = user;
               });
@@ -180,7 +185,7 @@ class _DoctorRegisterState extends State<DoctorRegister> {
   _onAlertWithCustomContentPressed1(context) {
     Alert(
         context: context,
-        title: 'Invalid Login Credential',
+        title: 'Invalid credentials',
         desc: Response,
         buttons: [
           DialogButton(
@@ -217,6 +222,7 @@ class _DoctorRegisterState extends State<DoctorRegister> {
             });
             if(f==1){
               setState(() {
+                flag = 0;
                 f = 0;
               });
               print("something wrong");
@@ -232,7 +238,9 @@ class _DoctorRegisterState extends State<DoctorRegister> {
           }
         }
         else{
-          Navigator.push(
+          Navigator.of(context).popUntil((route) => route.isFirst);
+
+          Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => LoginPage()),
           );
@@ -282,6 +290,10 @@ class _DoctorRegisterState extends State<DoctorRegister> {
     {
       control = _licence_no;
     }
+    if(fieldName=='email')
+      {
+        control = _email;
+      }
     return TextFormField(
       decoration: InputDecoration(
         labelText: labelTxt,

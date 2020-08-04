@@ -27,10 +27,10 @@ Future<UserModel>  verifyUser(String phone,String email)async{
   print(response.body);
   print(response.statusCode);
   if(response.statusCode == 200)
-    {
-      final String responseString = response.body;
-      return userModelFromJson(responseString);
-    }
+  {
+    final String responseString = response.body;
+    return userModelFromJson(responseString);
+  }
   if(response.statusCode==400)
   {
     flag = 1;
@@ -41,7 +41,7 @@ Future<UserModel>  verifyUser(String phone,String email)async{
   }
 }
 
-Future<UserModel> registerUser(String phone , String password , String otp, String name,String gender)async{
+Future<UserModel> registerUser(String phone , String password , String otp, String name,String gender,String email)async{
   final String apiUrl = "http://10.0.2.2:8000/create-user";
   final response = await http.post(apiUrl,body:{
     'phone' : phone,
@@ -49,7 +49,8 @@ Future<UserModel> registerUser(String phone , String password , String otp, Stri
     'OTP' : otp,
     'user_type' : 'Patient',
     'gender' : gender,
-    'name' : name
+    'name' : name,
+    'email' : email
   }
   );
   print(response.body);
@@ -91,26 +92,27 @@ class _UserRegisterState extends State<UserRegister> {
 
   _onAlertWithCustomImagePressed1(context){
     Alert(
-      context: context,
-      title: "REGISTRATION SUCCESS",
-      image: Image.asset('images/greentick.png'),
-      buttons: [
-        DialogButton(
-          color: Colors.black,
-          onPressed: (){
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => LoginPage()),
-            );
-          },
-          child: Text(
-            "close",
-            style: TextStyle(color: Colors.white, fontSize: 20),
-          ),
+        context: context,
+        title: "REGISTRATION SUCCESS",
+        image: Image.asset('images/greentick.png'),
+        buttons: [
+          DialogButton(
+            color: Colors.black,
+            onPressed: (){
+              Navigator.of(context).popUntil((route) => route.isFirst);
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => LoginPage()),
+              );
+            },
+            child: Text(
+              "close",
+              style: TextStyle(color: Colors.white, fontSize: 20),
+            ),
 
-        )
-      ]
+          )
+        ]
     ).show();
   }
   _onAlertWithCustomImagePressed2(context) {
@@ -157,8 +159,9 @@ class _UserRegisterState extends State<UserRegister> {
               final String otp = _otpValue.text;
               final String name = _name.text;
               final String gender = _gender.text;
+              final String email = _email.text;
 
-              final UserModel user = await registerUser(phone,password,otp,name,gender);
+              final UserModel user = await registerUser(phone,password,otp,name,gender,email);
               setState(() {
                 _user = user;
               });
@@ -170,7 +173,7 @@ class _UserRegisterState extends State<UserRegister> {
                 _onAlertWithCustomImagePressed2(context);
               }
 
-              },
+            },
             child: Text(
               "verify",
               style: TextStyle(color: Colors.white, fontSize: 20),
@@ -271,13 +274,16 @@ class _UserRegisterState extends State<UserRegister> {
       hide = false;
     }
     if(fieldName=='phone')
-      {
-        control = _phno;
-      }
+    {
+      control = _phno;
+    }
     if(fieldName == 'name')
-      {
-        control = _name;
-      }
+    {
+      control = _name;
+    }
+    if(fieldName=='email'){
+      control =_email;
+    }
     return TextFormField(
       decoration: InputDecoration(
         labelText: labelTxt,

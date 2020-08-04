@@ -75,6 +75,7 @@ class _RequestAccessState extends State<RequestAccess> {
           DialogButton(
             color: Colors.black,
             onPressed: (){
+              Navigator.popUntil(context, (route) => route.isFirst);
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => TreatPatient(_pphone.text,token)),

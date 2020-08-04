@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:dms/userLogin.dart';
 import 'package:flutter/material.dart';
 import 'design.dart';
 import 'usergetrecord.dart';
@@ -7,6 +8,7 @@ import 'package:flutter_plugin_pdf_viewer/flutter_plugin_pdf_viewer.dart';
 import 'package:url_launcher/url_launcher.dart';
 String tokens1;
 String patientphone;
+int flag = 0;
 
 class ViewPatient extends StatefulWidget{
   ViewPatient(String tokens,String phone){
@@ -32,6 +34,13 @@ Future<List<UserRecord>> records()async{
   {
     print("Accepted");
     var data = json.decode(response.body) as List;
+    if(data.length==0)
+      {
+        flag = 1;
+      }
+    else{
+      flag = 0;
+    }
     users = data.map((i) => UserRecord.fromJson(i)).toList();
     print(users);
     return users;
@@ -46,8 +55,8 @@ Future<List<UserRecord>> records()async{
 
  Future<PDFDocument> loadPdf() async{
    if(await canLaunch(mainurl)){
-     await launch(mainurl,forceSafariVC: false,forceWebView: false,headers: {
-       "Authorization":"Token "+tokens1,
+     await launch(mainurl,headers: {
+       "Authorization":"Token "+tokens1
      });
    }
 }
@@ -65,42 +74,47 @@ class ViewPatientstate extends State<ViewPatient>{
     return Scaffold(
       appBar: new Design().topBar("MY HISTORY"),
       body: SafeArea(
-          child: SingleChildScrollView(
-            child: FutureBuilder(
-              future: records(),
-              builder: (BuildContext context,AsyncSnapshot snapshot){
-               if(snapshot.data==null){
-                  print("Loading");
-                  return Container(
-                    child: Center(
-                        child: Text('loading...')
-                    ),
-                  );
-               }
-               else
-               {
-                    return ListView.builder(
-                      scrollDirection: Axis.vertical,
-                      shrinkWrap: true,
-                      itemCount: snapshot.data.length,
-                      itemBuilder: (BuildContext context,int index){
-                        return Card(
-                            child: ListTile(
-                              title:Text(snapshot.data[index].recordName),
-                              subtitle: Text(snapshot.data[index].doctorId.doctor.name),
-                              enabled: true,onTap: ()async{
-                                print("SUCCESS");
-                                mainurl = "http://10.0.2.2:8000"+snapshot.data[index].record;
-                                await loadPdf();
-                          },
-                        ),
-                        );
-                      }
-                  );
-               }
-              }
-            )
-            ),
+          child: FutureBuilder(
+            future: records(),
+            builder: (BuildContext context,AsyncSnapshot snapshot){
+             if(snapshot.data==null){
+                print("Loading");
+                return Container(
+                  child: Center(
+                      child: Text('loading')
+                  ),
+                );
+             }
+             else
+             {
+                  if(flag==1){
+                    return Container(
+                      child: Center(
+                          child: Text('no records')
+                      ),
+                    );
+                  }
+                  return ListView.builder(
+                    scrollDirection: Axis.vertical,
+                    shrinkWrap: true,
+                    itemCount: snapshot.data.length,
+                    itemBuilder: (BuildContext context,int index){
+                      return Card(
+                          child: ListTile(
+                            title:Text(snapshot.data[index].recordName),
+                            subtitle: Text(snapshot.data[index].doctorId.doctor.name),
+                            enabled: true,onTap: ()async{
+                              print("SUCCESS");
+                              mainurl = "http://10.0.2.2:8000"+snapshot.data[index].record;
+                              await loadPdf();
+                        },
+                      ),
+                      );
+                    }
+                );
+             }
+            }
+          ),
         ),
     );
   }

@@ -50,7 +50,10 @@ Future<List<UserRecord>> records()async{
 
  Future<PDFDocument> loadPdf() async{
    if(await canLaunch(mainurl)){
-     await launch(mainurl,forceSafariVC: false,forceWebView: false);
+     await launch(mainurl,headers: {
+       "Authorization":"Token "+tokens1
+     }
+     );
    }
 }
 
@@ -59,6 +62,7 @@ String mainurl;
 bool _isLoading = true;
 PDFDocument doc;
 String localpath;
+
 class Viewstate extends State<View>{
 
   String localpath;

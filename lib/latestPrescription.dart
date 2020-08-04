@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 String tokens1;
 String patientphone;
 UserRecord userlast;
+int flag = 0;
 class ViewPatientlatest extends StatefulWidget{
   ViewPatientlatest(String tokens,String phone){
     tokens1 = tokens;
@@ -34,6 +35,13 @@ Future<List<UserRecord>> records()async{
   {
     print("Accepted");
     var data = json.decode(response.body) as List;
+    if(data.length==0)
+      {
+        flag = 1;
+      }
+    else{
+      flag = 0;
+    }
     users = data.map((i) => UserRecord.fromJson(i)).toList();
     print(users);
     for(var i in users){
@@ -55,7 +63,8 @@ Future<List<UserRecord>> records()async{
    if(await canLaunch(mainurl)){
      await launch(mainurl,forceSafariVC: false,forceWebView: false,headers: {
        "Authorization":"Token "+tokens1,
-     });
+     }
+     );
    }
 }
 
@@ -72,21 +81,17 @@ class ViewPatientlateststate extends State<ViewPatientlatest>{
     return Scaffold(
       appBar: new Design().topBar("LAST PRESCRIPTION"),
       body: SafeArea(
-          child: SingleChildScrollView(
-            child: FutureBuilder(
-              future: records(),
-              builder: (BuildContext context,AsyncSnapshot snapshot){
-               if(userlast.recordName==null||snapshot.data==null){
-                  print("EMPTY");
-                  return Container(
+          child: FutureBuilder(
+            future: records(),
+            builder: (BuildContext context,AsyncSnapshot snapshot){
+              return
+               flag==1?
+                  Container(
                     child: Center(
-                        child: Text('loading...')
+                        child: Text('No records')
                     ),
-                  );
-               }
-               else
-               {
-                    return ListView(
+                  ):
+                    ListView(
                       scrollDirection: Axis.vertical,
                       shrinkWrap: true,
                       children: <Widget>[
@@ -103,10 +108,8 @@ class ViewPatientlateststate extends State<ViewPatientlatest>{
                         )
                       ],
                   );
-               }
               }
-            )
-            ),
+          ),
         ),
     );
   }

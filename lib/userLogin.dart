@@ -103,13 +103,14 @@ class _LoginPageState extends State<LoginPage> {
             else{
               this.token = _user.token;
               if(_user.user.userType=='Doctor'){
-                Navigator.push(
+                Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (context) => DoctorHomePage(token)),
                 );
               }
               if(_user.user.userType=='Patient'){
-                Navigator.push(
+                Navigator.of(context).popUntil((route) => route.isFirst);
+                Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (context) => UserHomePage(phone,token)),
                 );
@@ -119,7 +120,7 @@ class _LoginPageState extends State<LoginPage> {
           }
         }
         else{
-          Navigator.push(
+          Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => ChooseToRegister()),
           );

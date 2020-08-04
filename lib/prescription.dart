@@ -1,5 +1,4 @@
 
-import 'package:dms/doctorHome.dart';
 import 'package:dms/treatPatient.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -62,8 +61,9 @@ class _PrescriptionState extends State<Prescription> {
           DialogButton(
             color: Colors.black,
             onPressed: (){
+              Navigator.popUntil(context, (route) => route.isFirst);
               Navigator.push(context, MaterialPageRoute(
-                  builder: (context) => DoctorHomePage(token)
+                  builder: (context) => TreatPatient(phone,token)
               )
               );
             },
