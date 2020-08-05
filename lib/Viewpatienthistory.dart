@@ -1,22 +1,23 @@
 import 'dart:convert';
-import 'package:dms/userLogin.dart';
 import 'package:flutter/material.dart';
 import 'design.dart';
 import 'usergetrecord.dart';
 import 'package:http/http.dart'as http;
 import 'package:flutter_plugin_pdf_viewer/flutter_plugin_pdf_viewer.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+import 'pdfpreview.dart';
 String tokens1;
 String patientphone;
-int flag = 0;
-
+int flag;
+String urlPDFPath="";
 class ViewPatient extends StatefulWidget{
   ViewPatient(String tokens,String phone){
     tokens1 = tokens;
     patientphone = phone;
   }
   @override
-  ViewPatientstate createState() => ViewPatientstate(); 
+  ViewPatientstate createState() => ViewPatientstate(tokens1);
 }
 
 
@@ -34,7 +35,7 @@ Future<List<UserRecord>> records()async{
   {
     print("Accepted");
     var data = json.decode(response.body) as List;
-    if(data.length==0)
+    if(data.length<1)
       {
         flag = 1;
       }
@@ -53,12 +54,16 @@ Future<List<UserRecord>> records()async{
 
 
 
- Future<PDFDocument> loadPdf() async{
-   if(await canLaunch(mainurl)){
-     await launch(mainurl,headers: {
-       "Authorization":"Token "+tokens1
-     });
-   }
+ Future<File> loadPdf(String mainurl) async{
+  final response = await http.get(mainurl,headers: {
+    'Authorization' : 'Token '+tokens1
+  });
+  var bytes = response.bodyBytes;
+  var dir = await getApplicationDocumentsDirectory();
+  File file = File("${dir.path}/mypdfonline.pdf");
+
+  File urlFile = await file.writeAsBytes(bytes);
+  return urlFile;
 }
 
 List<UserRecord> users;
@@ -66,7 +71,8 @@ String mainurl;
 bool _isLoading = true;
 PDFDocument doc;
 class ViewPatientstate extends State<ViewPatient>{
-
+  String toke;
+  ViewPatientstate(this.toke);
   String localpath;
   @override
 
@@ -94,24 +100,37 @@ class ViewPatientstate extends State<ViewPatient>{
                       ),
                     );
                   }
-                  return ListView.builder(
-                    scrollDirection: Axis.vertical,
-                    shrinkWrap: true,
-                    itemCount: snapshot.data.length,
-                    itemBuilder: (BuildContext context,int index){
-                      return Card(
-                          child: ListTile(
-                            title:Text(snapshot.data[index].recordName),
-                            subtitle: Text(snapshot.data[index].doctorId.doctor.name),
-                            enabled: true,onTap: ()async{
+                  else {
+                    return ListView.builder(
+                        scrollDirection: Axis.vertical,
+                        shrinkWrap: true,
+                        itemCount: snapshot.data.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return Card(
+                            child: ListTile(
+                              title: Text(snapshot.data[index].recordName),
+                              subtitle: Text(snapshot.data[index].doctorId
+                                  .doctor.name),
+                              enabled: true, onTap: () async {
                               print("SUCCESS");
-                              mainurl = "http://10.0.2.2:8000"+snapshot.data[index].record;
-                              await loadPdf();
-                        },
-                      ),
-                      );
-                    }
-                );
+                              mainurl = "http://10.0.2.2:8000" +
+                                  snapshot.data[index].record;
+                              print(mainurl);
+                              await loadPdf(mainurl).then((f){
+                                setState(() {
+                                  urlPDFPath = f.path;
+                                });
+                              });
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => PDFView(urlPDFPath)),
+                              );
+                            },
+                            ),
+                          );
+                        }
+                    );
+                  }
              }
             }
           ),

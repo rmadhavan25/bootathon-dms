@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:dms/myAttendingHistory.dart';
 import 'package:dms/requestAccess.dart';
+import 'package:dms/userLogin.dart';
 import 'design.dart';
 import 'treatPatient.dart';
 import 'package:flutter/material.dart';
@@ -66,7 +67,39 @@ class _DoctorHomePageState extends State<DoctorHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: dh.topBar('Home'),
-      bottomNavigationBar:dh.bottomNav(),
+      bottomNavigationBar:BottomNavigationBar(
+        currentIndex: 0, // this will be set when a new tab is tapped
+        items: [
+          BottomNavigationBarItem(
+            icon: new IconButton(
+              icon: Icon(
+                Icons.home,
+                color: Colors.redAccent,
+              ),
+            ),
+            title: new Text(
+              'Home',
+              style: TextStyle(
+                color: Colors.redAccent,
+              ),
+            ),
+          ),
+          BottomNavigationBarItem(
+
+            icon: new IconButton(
+              icon: Image.asset('images/exit.png'),
+              onPressed: (){
+                Navigator.popUntil(context, (route) => route.isFirst);
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginPage()),
+                );
+              },
+            ),
+            title: new Text('logout'),
+          ),
+        ],
+      ),
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(

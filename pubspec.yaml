@@ -20,6 +20,7 @@ dependencies:
   path_provider: ^1.6.11
   url_launcher: ^5.5.0
   flutter_plugin_pdf_viewer: any
+  flutter_pdfview: ^1.0.0+10
   flutter:
     sdk: flutter
 

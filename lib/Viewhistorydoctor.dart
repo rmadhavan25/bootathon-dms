@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 import 'design.dart';
 import 'usergetrecord.dart';
 import 'package:http/http.dart'as http;
-import 'package:flutter_plugin_pdf_viewer/flutter_plugin_pdf_viewer.dart';
-import 'package:url_launcher/url_launcher.dart';
+//import 'package:flutter_plugin_pdf_viewer/flutter_plugin_pdf_viewer.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'pdfpreview.dart';
 
 String tokens1;
 String patientphone;
+String urlPDFPath="";
 
 class View extends StatefulWidget{
   View(String tokens,String phone){
@@ -48,21 +51,23 @@ Future<List<UserRecord>> records()async{
 
 
 
- Future<PDFDocument> loadPdf() async{
-   if(await canLaunch(mainurl)){
-     await launch(mainurl,headers: {
-       "Authorization":"Token "+tokens1
-     }
-     );
-   }
+Future<File> loadPdf(String mainurl) async{
+  final response = await http.get(mainurl,headers: {
+    'Authorization' : 'Token '+tokens1
+  });
+  var bytes = response.bodyBytes;
+  var dir = await getApplicationDocumentsDirectory();
+  File file = File("${dir.path}/mypdfonline.pdf");
+
+  File urlFile = await file.writeAsBytes(bytes);
+  return urlFile;
 }
 
 List<UserRecord> users;
 String mainurl;
 bool _isLoading = true;
-PDFDocument doc;
+//PDFDocument doc;
 String localpath;
-
 class Viewstate extends State<View>{
 
   String localpath;
@@ -98,9 +103,19 @@ class Viewstate extends State<View>{
                               title:Text(snapshot.data[index].recordName),
                               subtitle: Text(snapshot.data[index].doctorId.doctor.name),
                               enabled: true,onTap: ()async{
-                                print("SUCCESS");
-                                mainurl = "http://10.0.2.2:8000"+snapshot.data[index].record;
-                                await loadPdf();
+                              print("SUCCESS");
+                              mainurl = "http://10.0.2.2:8000" +
+                                  snapshot.data[index].record;
+                              print(mainurl);
+                              await loadPdf(mainurl).then((f){
+                                setState(() {
+                                  urlPDFPath = f.path;
+                                });
+                              });
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => PDFView(urlPDFPath)),
+                              );
                           },
                         ),
                         );

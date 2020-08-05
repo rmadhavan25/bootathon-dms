@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 import 'package:dms/latestprescription.dart';
+import 'package:dms/userLogin.dart';
 import 'Viewpatienthistory.dart';
 import 'design.dart';
 import 'package:flutter/material.dart';
@@ -66,7 +67,39 @@ class _UserHomePageState extends State<UserHomePage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: uh.topBar('Home'),
-      bottomNavigationBar: uh.bottomNav(),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 0, // this will be set when a new tab is tapped
+        items: [
+          BottomNavigationBarItem(
+            icon: new IconButton(
+              icon: Icon(
+                Icons.home,
+                color: Colors.redAccent,
+              ),
+            ),
+            title: new Text(
+                'Home',
+              style: TextStyle(
+                color: Colors.redAccent,
+              ),
+            ),
+          ),
+          BottomNavigationBarItem(
+            icon: new IconButton(
+              icon: Image.asset('images/exit.png'),
+              onPressed: (){
+                Navigator.popUntil(context, (route) => route.isFirst);
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginPage()),
+                );
+              },
+
+            ),
+            title: new Text('logout'),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
